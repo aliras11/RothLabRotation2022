@@ -63,8 +63,16 @@ ggplot(temp, aes(temp$`Age (case:AgeDx; control:Enroll)`,temp$refined_score,colo
   xlab("Patient Age") + ylab("Refined Score") + 
   labs(title = "Refined Score vs Patient Age - Missense Variants",color="Estrogen Receptor Status")
   
+chek2_cosmic <- read.csv("/Users/alirezarasoulzadeh/Desktop/Roth Lab/chek2data_cosmic.csv")
 
+chek2_cosmic2<-chek2_cosmic[,c(1,8,12,22,35)] 
+levels(as.factor(chek2_cosmic$Primary_site)) #36 different tissue types in data
+chek2_cosmic2 <- rename(chek2_cosmic2,hgvs_pro=HGVSP)
 
+chek2_comsic_joined <- left_join(chek2_cosmic2,CHEK2_Imputed_Refined,by="hgvs_pro")
+#chek2 data with tissue distribution from cosmic joined to the imputed scores for chek2 
+#variant effect map
 
+chek2_comsic_joined<-na.omit(chek2_comsic_joined)
 
 
