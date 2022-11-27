@@ -1,10 +1,7 @@
-import re
+
 import sqlite3 as sq
 import os.path 
-import csv
 import pandas as pd
-from pyparsing import col 
-
 
 class DataBase:
     def __init__(self, path):
@@ -83,18 +80,13 @@ class CosmicDB(DataBase):
         df = pd.DataFrame(genequerylist,columns=list(self.table_info(table).iloc[:,1]))
         return df
 
-    def organ_gene_query(self,tissue,gene,table="MutantExport",size_output=100000,return_df = True):
+    def organ_gene_query(self,tissue,gene,table="MutantExport",size_output=100000):
         query = f'''select * from {table} where Primary_site like \'{tissue}%\' and gene_name like \'{gene}%\''''
-        if return_df:
-            genequerylist = self.cursor.execute(query).fetchmany(size=size_output)
-            df = pd.DataFrame(genequerylist,columns=list(self.table_info(table).iloc[:,1]))
-            return df
-        else: 
-            cursor = self.cursor.execute(query)
-            return cursor
-
-        
-
+        genequerylist = self.cursor.execute(query).fetchmany(size=size_output)
+        df = pd.DataFrame(genequerylist,columns=list(self.table_info(table).iloc[:,1]))
+        return df
+    
+    
     
     
 
@@ -108,5 +100,7 @@ if __name__ == "__main__":
    testdb.open_db()
    print(testdb.path)
    print(testdb.tables)
-   print(testdb.organ_gene_query("liver","NCOR2",return_df=False))
+   print(testdb.table_info("MutantExport"))
+   print(testdb.gene_query("NCOR2"))
+   print(testdb.organ_gene_query("liver","NCOR2"))
    testdb.close_db()
