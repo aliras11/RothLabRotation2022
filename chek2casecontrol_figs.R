@@ -6,6 +6,8 @@ library(readxl)
 library(stringr)
 CARRIERS_populationbased_CHEK2_variant_carriers <- read_excel("CARRIERS populationbased CHEK2 variant carriers.xlsx", 
                                                               sheet = "CHEK2 carriers")
+CARRIERS_populationbased_CHEK2_variant_carriers<-read.csv("/Users/alirezarasoulzadeh/Desktop/Roth Lab/chek2_variant_cleaned.csv")
+
 View(CARRIERS_populationbased_CHEK2_variant_carriers)
 
 CHEK2_Imputed_Refined <- read.csv("~/Desktop/Roth Lab/CHEK2_Imputed_Refined.csv")
@@ -13,11 +15,12 @@ CHEK2_Imputed_Refined <- read.csv("~/Desktop/Roth Lab/CHEK2_Imputed_Refined.csv"
 #extract rows with missense, and nonsense variants from 'CHEK2 carriers'
 #there is an issue with synonymous mutations where there is amino acid sequence
 #only nucleotide sequence is provided
-
+#write.csv(CARRIERS_populationbased_CHEK2_variant_carriers,file="chek2variant_carriers.csv")
 chek2_carrier_filtered<-
   CARRIERS_populationbased_CHEK2_variant_carriers[
-    CARRIERS_populationbased_CHEK2_variant_carriers$`variant type`=="stop_gained"
-      |CARRIERS_populationbased_CHEK2_variant_carriers$`variant type`=="missense_variant",]
+    CARRIERS_populationbased_CHEK2_variant_carriers$`variant.type`=="stop_gained"
+      |CARRIERS_populationbased_CHEK2_variant_carriers$`variant.type`=="missense_variant"
+    |CARRIERS_populationbased_CHEK2_variant_carriers$`variant.type`=="synonymous_variant",]
 
 
 #add hgvs_pro column
@@ -77,6 +80,6 @@ chek2_comsic_joined<-na.omit(chek2_comsic_joined)
 
 temp<-chek2_comsic_joined%>%group_by(Primary_site)%>%summarise(count_tissue_occurance = n())
 
-ggplot(chek2_comsic_joined, aes(Primary_site,refined_score))+
-  geom_boxplot() + facet_wrap(~Primary_site)
+ggplot(chek2_comsic_joined, aes(y=refined_score))+
+  geom_boxplot() + facet_wrap(~Primary_site) + xlab(NULL)
 
