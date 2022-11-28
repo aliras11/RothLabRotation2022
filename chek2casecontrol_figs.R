@@ -75,4 +75,8 @@ chek2_comsic_joined <- left_join(chek2_cosmic2,CHEK2_Imputed_Refined,by="hgvs_pr
 
 chek2_comsic_joined<-na.omit(chek2_comsic_joined)
 
+temp<-chek2_comsic_joined%>%group_by(Primary_site)%>%summarise(count_tissue_occurance = n())
+
+ggplot(chek2_comsic_joined, aes(Primary_site,refined_score))+
+  geom_boxplot() + facet_wrap(~Primary_site)
 

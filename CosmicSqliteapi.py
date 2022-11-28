@@ -98,9 +98,6 @@ class CosmicDB(DataBase):
 if __name__ == "__main__":
    testdb = CosmicDB("/Users/alirezarasoulzadeh/Desktop/CosmicMutantExport.db")
    testdb.open_db()
-   print(testdb.path)
-   print(testdb.tables)
-   print(testdb.table_info("MutantExport"))
-   print(testdb.gene_query("NCOR2"))
-   print(testdb.organ_gene_query("liver","NCOR2"))
+
+   print(testdb.__dict__)
    testdb.close_db()
