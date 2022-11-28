@@ -16,6 +16,8 @@ CHEK2_Imputed_Refined <- read.csv("~/Desktop/Roth Lab/CHEK2_Imputed_Refined.csv"
 #there is an issue with synonymous mutations where there is amino acid sequence
 #only nucleotide sequence is provided
 #write.csv(CARRIERS_populationbased_CHEK2_variant_carriers,file="chek2variant_carriers.csv")
+#write.csv(aa_seq_chek2,file="aa_seq_chek2.csv",row.names = FALSE)
+
 chek2_carrier_filtered<-
   CARRIERS_populationbased_CHEK2_variant_carriers[
     CARRIERS_populationbased_CHEK2_variant_carriers$`variant.type`=="stop_gained"
@@ -24,7 +26,7 @@ chek2_carrier_filtered<-
 
 
 #add hgvs_pro column
-chek2_carrier_filtered$hgvs_pro = str_extract(chek2_carrier_filtered$`CHEK2 variant`,"p.\\w*")
+chek2_carrier_filtered$hgvs_pro = str_extract(chek2_carrier_filtered$`CHEK2.variant`,"p.\\w*")
 
 #match scores to case control dataset depending on the amino acid change observed
 chek2_matched<-left_join(chek2_carrier_filtered,CHEK2_Imputed_Refined,by = "hgvs_pro")
@@ -68,7 +70,7 @@ ggplot(temp, aes(temp$`Age (case:AgeDx; control:Enroll)`,temp$refined_score,colo
   
 chek2_cosmic <- read.csv("/Users/alirezarasoulzadeh/Desktop/Roth Lab/chek2data_cosmic.csv")
 
-chek2_cosmic2<-chek2_cosmic[,c(1,8,12,22,35)] 
+chek2_cosmic2<-chek2_cosmic[,c(1,8,12,22,33,35)] 
 levels(as.factor(chek2_cosmic$Primary_site)) #36 different tissue types in data
 chek2_cosmic2 <- rename(chek2_cosmic2,hgvs_pro=HGVSP)
 
@@ -76,10 +78,44 @@ chek2_comsic_joined <- left_join(chek2_cosmic2,CHEK2_Imputed_Refined,by="hgvs_pr
 #chek2 data with tissue distribution from cosmic joined to the imputed scores for chek2 
 #variant effect map
 
-chek2_comsic_joined<-na.omit(chek2_comsic_joined)
+#only keep those with known mutations
+chek2_cosmic_cleanjoin<-chek2_comsic_joined[chek2_comsic_joined$Mutation_description!="Unknown",]
+#keep those with scores
+chek2_cosmic_cleanjoin<-chek2_comsic_joined[!is.na(chek2_comsic_joined$refined_score),]
 
-temp<-chek2_comsic_joined%>%group_by(Primary_site)%>%summarise(count_tissue_occurance = n())
+temp<-chek2_cosmic_cleanjoin%>%group_by(Primary_site)%>%summarise(count_tissue_occurance = n())
+#use these as the organs to look at 
+filter(temp,count_tissue_occurance>50)[,1]
+myvector<-c("breast","central_nervous_system","endometrium",
+            "haematopoietic_and_lymphoid_tissue","kidney","large_intestine",
+            "liver","lung","meninges","oesophagus","ovary","prostate",
+            "skin","soft_tissue","stomach","thyroid","upper_aerodigestive_tract",
+            "urinary_tract"
+            )
+temp2<-chek2_cosmic_cleanjoin %>% filter(Primary_site %in% myvector)
 
-ggplot(chek2_comsic_joined, aes(y=refined_score))+
+ggplot(temp2, aes(y=refined_score))+
   geom_boxplot() + facet_wrap(~Primary_site) + xlab(NULL)
+##################################################################
+
+
+missense_chek2 <- read.csv("~/Desktop/Roth Lab/missense_chek2.csv")
+synonymous_chek2 <- read.csv("~/Desktop/Roth Lab/synonymous_chek2.csv")
+nonsense_chek2 <- read.csv("~/Desktop/Roth Lab/nonsense_chek2.csv")
+
+synonymous_chek2$aa_position<-NULL
+
+cleaned_chek2_cases <-rbind(missense_chek2,synonymous_chek2)
+cleaned_chek2_cases<-rbind(cleaned_chek2_cases,nonsense_chek2)
+
+cleaned_chek2_matched<-left_join(cleaned_chek2_cases,CHEK2_Imputed_Refined,by = "hgvs_pro")
+
+cleaned_chek2_matched<-cleaned_chek2_matched[!is.na(cleaned_chek2_matched$refined_score),]
+
+
+
+
+
+
+
 
