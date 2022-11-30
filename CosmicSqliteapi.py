@@ -1,3 +1,5 @@
+''''accesses a premade sqlite database and allows for custom queries to be ran, this file can be extended with more custom classes
+representing different database types (all should inherit from DataBase)'''
 
 import sqlite3 as sq
 import os.path 
