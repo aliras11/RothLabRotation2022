@@ -112,6 +112,107 @@ cleaned_chek2_matched<-left_join(cleaned_chek2_cases,CHEK2_Imputed_Refined,by = 
 
 cleaned_chek2_matched<-cleaned_chek2_matched[!is.na(cleaned_chek2_matched$refined_score),]
 
+ggplot(temp2, aes(x=refined_score))+
+  geom_histogram() + facet_wrap(~Primary_site) + xlab(NULL) +
+  theme_bw()
+
+chek2_cosmic_cleanjoin$lower_score<-chek2_cosmic_cleanjoin$refined_score-
+  chek2_cosmic_cleanjoin$refined_score_se
+
+chek2_cosmic_cleanjoin$upper_score<-chek2_cosmic_cleanjoin$refined_score+
+  chek2_cosmic_cleanjoin$refined_score_se
+
+range_checker<-function(row){
+  if(as.numeric(row[17])<0.5 && as.numeric(row[18])>0.5){
+    return(1) #if the upper range and lower range cross 0.5 assign a value for subsetting
+  }else{0} #score we are more sure about 
+}
+
+#for some reason the apply function did not work for what I was doing 
+range_mask<-vector("logical",4283)
+for(i in (1:4283)){
+  row<-chek2_cosmic_cleanjoin[i,]
+  range_mask[i]<-range_checker(row)
+  
+}
+
+chek2_cosmic_cleanjoin<-cbind(chek2_cosmic_cleanjoin,range_mask)
+chek2_cosmic_tissue<-chek2_cosmic_cleanjoin %>% filter(range_mask == FALSE)
+
+
+ggplot(chek2_cosmic_tissue, aes(x=refined_score))+
+  geom_histogram(fill=rainbow(780)) + facet_wrap(~Primary_site) + xlab(NULL) +
+  theme_bw() +geom_text(data=tissue_summary,mapping = aes(x=-Inf,y=Inf, label=labels,
+                                      hjust = -0.5,vjust   = 1.5)) +geom_vline(
+                      xintercept = 0.5, linetype = "dotted"
+                                      ) + labs(title="Chek2 Variant Tissue Distribution",
+                                               caption = "scores that crossed 0.5 were omitted")
+
+tissue_summary<-chek2_cosmic_tissue %>% group_by(Primary_site) %>% summarise(tissue_occurence = n())
+tissue_summary<-as.data.frame(tissue_summary)
+tissue_summary$labels <-apply(tissue_summary,1,label_maker)
+
+label_maker<-function(row){
+  return(sprintf("n = %s",row[2]))
+}
+
+ggplot(chek2_cosmic_tissue, aes(x=type ,y=refined_score))+
+  geom_boxplot(outlier.colour="white") + facet_wrap(~Primary_site) + xlab(NULL) +
+  theme_bw() +geom_text(data=tissue_summary,mapping = aes(x=-Inf,y=Inf, label=labels,
+                                         hjust = -2,vjust   = 2.5))+
+  geom_hline(yintercept = 0.5, linetype= "dotted")+
+                            labs(title="Chek2 Variant Tissue Distribution",
+                         caption = "scores that crossed 0.5 were omitted,
+                         lower scores - worse",color="Mutation Type") +
+ geom_jitter(width = 0.1,aes(color=chek2_cosmic_tissue$type))
+
+
+
+
+
+#################################################################
+#filter out scores we are not too certain of in the case control data as well
+
+cleaned_chek2_matched$lower_score<-cleaned_chek2_matched$refined_score-
+  cleaned_chek2_matched$refined_score_se
+
+cleaned_chek2_matched$upper_score<-cleaned_chek2_matched$refined_score+
+  cleaned_chek2_matched$refined_score_se
+
+
+range_checker2<-function(row){
+  if(as.numeric(row[22])<0.5 && as.numeric(row[23])>0.5){
+    return(1) #if the upper range and lower range cross 0.5 assign a value for subsetting
+  }else{0} #score we are more sure about 
+}
+
+#for some reason the apply function did not work for what I was doing 
+range_mask2<-vector("numeric",1818)
+for(i in (1:1818)){
+  row<-cleaned_chek2_matched[i,]
+  range_mask2[i]<-range_checker2(row)
+  
+}
+
+cleaned_chek2_matched<-cbind(cleaned_chek2_matched,range_mask2)
+
+temp <- cleaned_chek2_matched %>% filter(range_mask2<1)
+
+#sort the case control data based on refined score to assign them to a bin
+sorted_chek2cc<-cleaned_chek2_matched[order(cleaned_chek2_matched$refined_score),]
+
+#create a vector that represents the different bins in the sorted chek2cc
+group_vector <-vector("numeric",1818)
+group_counter<-0
+for(i in 1:1818){
+  group_vector[i]<-group_counter
+  if(i%%92 == 0){ #modulo will determine the group size
+    group_counter <- group_counter + 1
+  }
+
+}
+#sorted_chek2cc$group_vector <- NULL
+sorted_chek2cc<-cbind(sorted_chek2cc,group_vector)
 
 
 
@@ -119,3 +220,5 @@ cleaned_chek2_matched<-cleaned_chek2_matched[!is.na(cleaned_chek2_matched$refine
 
 
 
+
+ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ
