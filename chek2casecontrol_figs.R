@@ -52,7 +52,8 @@ ggplot(temp, aes(temp$`Age (case:AgeDx; control:Enroll)`,temp$refined_score)) +
   xlab("Patient Age") + ylab("Refined Score") + 
   labs(title = "Refined Score vs Patient Age - Missense Variants",color="Estrogen Receptor Status")
 
-
+ggplot(temp, aes(x=temp$`Age (case:AgeDx; control:Enroll)`,y=temp$refined_score))+
+  geom_histogram(stat="identity")
 
 #filter out the 777 and 888 from the estrogen receptor status
 
@@ -140,15 +141,15 @@ chek2_cosmic_cleanjoin<-cbind(chek2_cosmic_cleanjoin,range_mask)
 chek2_cosmic_tissue<-chek2_cosmic_cleanjoin %>% filter(range_mask == FALSE)
 
 
-ggplot(chek2_cosmic_tissue, aes(x=refined_score))+
-  geom_histogram(fill=rainbow(780)) + facet_wrap(~Primary_site) + xlab(NULL) +
+ggplot(chek2_cosmic_cleanjoin, aes(x=refined_score))+
+  geom_histogram() + facet_wrap(~Primary_site) + xlab(NULL) +
   theme_bw() +geom_text(data=tissue_summary,mapping = aes(x=-Inf,y=Inf, label=labels,
                                       hjust = -0.5,vjust   = 1.5)) +geom_vline(
                       xintercept = 0.5, linetype = "dotted"
                                       ) + labs(title="Chek2 Variant Tissue Distribution",
-                                               caption = "scores that crossed 0.5 were omitted")
+                                               caption = "scores that crossed 0.5 were included")
 
-tissue_summary<-chek2_cosmic_tissue %>% group_by(Primary_site) %>% summarise(tissue_occurence = n())
+tissue_summary<-chek2_cosmic_cleanjoin %>% group_by(Primary_site) %>% summarise(tissue_occurence = n())
 tissue_summary<-as.data.frame(tissue_summary)
 tissue_summary$labels <-apply(tissue_summary,1,label_maker)
 
@@ -214,11 +215,12 @@ for(i in 1:1818){
 #sorted_chek2cc$group_vector <- NULL
 sorted_chek2cc<-cbind(sorted_chek2cc,group_vector)
 
+write.csv(sorted_chek2cc,file="grouped_cc_chek2")
 
+#look at if scores in some tissues are systematically higher than others 
+#brca1 map to compare look at an example of sitatuon where tissue distribution is
+#skewed
+#look into more data about cancer cases with lower scores in tissue distribution
+#(tcga,pcag....cancer genome atlas,cbioportal)
 
-
-
-
-
-
-ΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩΩ
+#coefficient of variation
